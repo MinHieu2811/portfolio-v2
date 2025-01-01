@@ -15,6 +15,8 @@ export const DogContainer = forwardRef<
   </div>
 ));
 
+DogContainer.displayName = "DogContainer";
+
 const Loader = () => {
   return (
     <DogContainer>

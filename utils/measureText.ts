@@ -7,13 +7,14 @@ export function getCanvasContext() {
   if (!_context) {
     _context = document.createElement("canvas").getContext("2d")!;
   }
+
   return _context;
 }
 
 export function measureText(
   text: string,
   fontSize: number,
-  fontWeight = 400
+  fontWeight = 400,
 ): TextMetrics {
   const fontStyle = `${fontWeight} ${fontSize}px 'Inter'`;
   const cacheKey = text + fontStyle;

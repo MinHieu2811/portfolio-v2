@@ -14,9 +14,7 @@ import clsx from "clsx";
 
 import { siteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";
-import {
-  Logo,
-} from "@/components/icons";
+import { Logo } from "@/components/icons";
 
 export const Navbar = () => {
   return (
