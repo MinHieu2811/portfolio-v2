@@ -1,62 +1,64 @@
-import { ChangeEvent, ReactNode, useEffect, useState } from "react";
-import { FileDrop } from "react-file-drop";
+'use client'
 
-import { PlusIcon } from "../icons";
+import { ChangeEvent, ReactNode, useEffect, useState } from 'react'
+import { FileDrop } from 'react-file-drop'
 
-import { removeSpecials } from "@/utils/text";
+import { PlusIcon } from '../icons'
+
+import { removeSpecials } from '@/utils/text'
 
 interface FileUploaderProps {
-  label?: string;
-  width?: string;
-  height?: string;
-  multiple?: boolean;
-  enableUploadSameFileTwice?: boolean;
-  placeholder?: string;
-  placeholderIcon?: ReactNode;
-  onFilesChanged?: (files: File[]) => void;
-  acceptFileType?: string;
-  showIcon?: boolean;
-  disabled?: boolean;
-  className?: string;
+  label?: string
+  width?: string
+  height?: string
+  multiple?: boolean
+  enableUploadSameFileTwice?: boolean
+  placeholder?: string
+  placeholderIcon?: ReactNode
+  onFilesChanged?: (files: File[]) => void
+  acceptFileType?: string
+  showIcon?: boolean
+  disabled?: boolean
+  className?: string
 }
 
 export function FileUploader({
   enableUploadSameFileTwice = true,
-  placeholder = "Upload image",
-  acceptFileType = ".jpg,.jpeg,.png,.tiff,.webp,.gif,.pdf,.doc,.docx,.xls,.xlsx,.mp4",
+  placeholder = 'Upload image',
+  acceptFileType = '.jpg,.jpeg,.png,.tiff,.webp,.gif,.pdf,.doc,.docx,.xls,.xlsx,.mp4',
   placeholderIcon = <PlusIcon size={24} />,
   ...props
 }: FileUploaderProps) {
-  const [isInit, setIsInit] = useState(false);
+  const [isInit, setIsInit] = useState(false)
 
   const onChange = (event: ChangeEvent<HTMLInputElement>) => {
-    !props.disabled && props?.onFilesChanged?.(getFileList(event.target.files));
-  };
+    !props.disabled && props?.onFilesChanged?.(getFileList(event.target.files))
+  }
 
   const onDrop = (files: FileList | null) => {
-    !props.disabled && props?.onFilesChanged?.(getFileList(files));
-  };
+    !props.disabled && props?.onFilesChanged?.(getFileList(files))
+  }
 
   const onClick = (event: any) => {
-    enableUploadSameFileTwice && (event.target.value = null);
-  };
+    enableUploadSameFileTwice && (event.target.value = null)
+  }
 
   useEffect(() => {
-    setIsInit(true);
-  }, []);
+    setIsInit(true)
+  }, [])
 
   return (
     <div
-      className={`file-uploader ${props.className ?? ""} ${props.disabled ? "disabled" : ""}`}
+      className={`file-uploader ${props.className ?? ''} ${props.disabled ? 'disabled' : ''}`}
       style={{
         ...(props.width ? { width: props.width } : {}),
-        ...(props.height ? { height: props.height } : {}),
+        ...(props.height ? { height: props.height } : {})
       }}
     >
       {isInit && (
         <FileDrop onDrop={onDrop}>
           <label>
-            <span className="w-100 text-center body-2 pt-2 d-flex flex-column align-items-center">
+            <span className="w-full h-full text-center body-2 pt-2 flex flex-col items-center justify-center">
               {props?.showIcon != false && placeholderIcon}
               {placeholder}
             </span>
@@ -72,22 +74,22 @@ export function FileUploader({
       )}
       {/* <style jsx>{style}</style> */}
     </div>
-  );
+  )
 }
 
 export const getFileList = (files: FileList | null): File[] => {
-  if (!files || files.length === 0) return [];
-  const fileList: File[] = [];
+  if (!files || files.length === 0) return []
+  const fileList: File[] = []
 
   for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    const newFile = new File([file || ""], removeSpecials(file?.name || ""));
+    const file = files[i]
+    const newFile = new File([file || ''], removeSpecials(file?.name || ''))
 
-    if (newFile) fileList.push(newFile);
+    if (newFile) fileList.push(newFile)
   }
 
-  return fileList;
-};
+  return fileList
+}
 
 // const style = css`
 //   .file-uploader {

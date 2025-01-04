@@ -1,3 +1,32 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+input[type='file'] {
+  display: none;
+}
+
+.file-drop {
+  height: 100%;
+}
+
+.file-drop-target {
+  height: 100%;
+}
+
+/* .masonry {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  grid-auto-rows: 0;
+} */
+
+.masonry {
+  column-count: 3; /* Số cột */
+  column-gap: 16px; /* Khoảng cách giữa các cột */
+}
+
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 16px;
+}

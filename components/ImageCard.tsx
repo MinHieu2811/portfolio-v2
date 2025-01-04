@@ -1,64 +1,71 @@
 /* eslint-disable @next/next/no-img-element */
-import { Button } from "@nextui-org/button";
-import React, { ComponentProps } from "react";
+import { Button } from '@nextui-org/button'
+import React, { ComponentProps, useState } from 'react'
+import { Card, CardBody } from '@nextui-org/react'
 
-import { CopyIcon, DeleteIcon } from "./icons";
+import { CopyIcon, DeleteIcon } from './icons'
 
-type ImageCardProps = ComponentProps<"img"> & {
-  canDelete?: boolean;
-  signature?: string;
-  publicId?: string;
-  assetId?: string;
-  isLoading?: boolean;
-  handleCopySrc?: (id: string) => void;
-  handleDeleteImg?: (props: {
-    publicId: string;
-    signature: string;
-    assetId: string;
-  }) => Promise<void>;
-};
+import { FuncDeleteImage } from '@/services/post-form'
+
+type ImageCardProps = ComponentProps<'img'> & {
+  canDelete?: boolean
+  publicId?: string
+  uploading?: boolean
+  handleCopySrc?: (id: string) => void
+  handleDeleteImg?: FuncDeleteImage
+  handleUpdateList?: (id: string) => void
+}
 
 const ImageCard = ({
   src,
-  width = 200,
-  height = 200,
-  signature,
+  width = 300,
+  height = 300,
   publicId,
-  assetId,
   alt,
+  className,
   canDelete,
-  isLoading = false,
   handleCopySrc,
   handleDeleteImg,
+  handleUpdateList
 }: ImageCardProps) => {
+  const [loading, setLoading] = useState(false)
+
   return (
-    <div className="relative">
+    <div className={`relative ${className}`}>
       <Button
         isIconOnly
+        className="absolute top-1 right-2 z-10"
+        size="sm"
         variant="solid"
-        onClick={() => handleCopySrc?.(src ?? "")}
+        onClick={() => handleCopySrc?.(src ?? '')}
       >
-        <CopyIcon size={24} />
+        <CopyIcon size={16} />
       </Button>
       {canDelete && (
         <Button
           isIconOnly
-          isLoading={isLoading}
+          className="absolute top-1 right-12 z-10"
+          isLoading={loading}
+          size="sm"
           variant="solid"
           onClick={() =>
             handleDeleteImg?.({
-              publicId: publicId ?? "",
-              signature: signature ?? "",
-              assetId: assetId ?? "",
+              publicId: publicId ?? '',
+              handleLoading: () => setLoading(!loading),
+              handleUpdateList: handleUpdateList
             })
           }
         >
-          <DeleteIcon size={24} />
+          <DeleteIcon size={16} />
         </Button>
       )}
-      <img alt={alt} height={height} src={src} width={width} />
+      <Card className="rounded-lg border-1 border-dashed border-indigo-500">
+        <CardBody className="p-0 rounded-lg">
+          <img alt={alt} className="rounded-lg " height={height} src={src} width={width} />
+        </CardBody>
+      </Card>
     </div>
-  );
-};
+  )
+}
 
-export default ImageCard;
+export default ImageCard

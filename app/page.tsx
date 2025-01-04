@@ -1,135 +1,114 @@
-"use client";
+'use client'
 
-import { Input } from "@nextui-org/input";
-import { ChangeEvent, useCallback, useState } from "react";
-import { Post } from "@prisma/client";
-import { Button } from "@nextui-org/react";
+import { Input } from '@nextui-org/input'
+import { ChangeEvent, useCallback, useState } from 'react'
+import { Post } from '@prisma/client'
+import { Button } from '@nextui-org/react'
 
-import MyEditor from "@/components/custom/MyEditor";
-import { Nullable } from "@/types";
-import { FileUploader } from "@/components/custom/FileDrop";
-import { axiosImageInstance } from "@/lib/axios";
-import ImageCard from "@/components/ImageCard";
-import { copyText } from "@/utils/copyText";
-import { ImagePost } from "@/types/form";
+import MyEditor from '@/components/custom/MyEditor'
+import { Nullable } from '@/types'
+import { FileUploader } from '@/components/custom/FileDrop'
+import ImageCard from '@/components/ImageCard'
+import { copyText } from '@/utils/copyText'
+import { ImagePost } from '@/types/form'
+import { usePostServices } from '@/services/post-form'
+import TagCreator from '@/components/custom/TagCreator'
 
 const inititalPostForm: Nullable<Post> = {
-  slug: "",
-  content: "",
-  title: "",
-};
+  slug: '',
+  content: '',
+  title: ''
+}
+
+const fakeData = [
+  {
+    value: 'react',
+    count: 5
+  },
+  {
+    value: 'nextjs',
+    count: 6
+  },
+  {
+    value: 'javascript',
+    count: 7
+  }
+]
 
 export default function Home() {
-  const [formCreate, setFormCreate] =
-    useState<Nullable<Post>>(inititalPostForm);
-  const [reviewImagesBlob, setReviewImagesBlob] = useState<ImagePost[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [formCreate, setFormCreate] = useState<Nullable<Post>>(inititalPostForm)
+  const [reviewImagesBlob, setReviewImagesBlob] = useState<ImagePost[]>([])
+  const { loading: uploading, handleDeleteImg, handleSubmitImage } = usePostServices()
 
+  const handleUpdateListCreateImage = (newItem?: ImagePost) => {
+    setReviewImagesBlob([...(reviewImagesBlob ?? []), newItem ?? {}])
+  }
+
+  const handleDeleteItem = (publicId: string) => {
+    setReviewImagesBlob(reviewImagesBlob?.filter((item) => item?.publicId !== publicId))
+  }
   const handleOnChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormCreate({
       ...formCreate,
-      [e?.target?.name]: e?.target?.value,
-    });
-  };
+      [e?.target?.name]: e?.target?.value
+    })
+  }
 
   const onAutoGenerateSlug = useCallback(() => {
     setFormCreate({
       ...formCreate,
-      slug: formCreate?.title?.toLocaleLowerCase()?.split(" ")?.join("-"),
-    });
-  }, [formCreate?.title]);
+      slug: formCreate?.title?.toLocaleLowerCase()?.trim()?.split(' ')?.join('-')
+    })
+  }, [formCreate?.title])
 
-  const handleSubmitImage = async (files: Blob[]) => {
-    try {
-      setLoading(true);
-      const formData = new FormData();
-
-      if (files?.length > 1) {
-        files?.forEach((file) => {
-          formData.append("file", file);
-        });
-      } else {
-        formData?.append("file", files[0]);
-      }
-      formData.append("upload_preset", "eyf8dpkh");
-      const res = await axiosImageInstance.post(
-        "https://api.cloudinary.com/v1_1/dp9xqwrsz/image/upload",
-        formData,
-      );
-
-      setReviewImagesBlob([
-        ...reviewImagesBlob,
-        {
-          secureUrl: res?.data?.secure_url,
-          publicId: res?.data?.public_id,
-          signature: res?.data?.signature,
-          assetId: res?.data?.asset_id,
-        },
-      ]);
-    } catch (error: unknown) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteImg = async ({
-    publicId,
-    signature,
-    assetId,
-  }: {
-    publicId: string;
-    signature: string;
-    assetId: string;
-  }) => {
-    try {
-      const res = await axiosImageInstance.post(
-        "https://api.cloudinary.com/v1_1/dp9xqwrsz/image/destroy",
-        {
-          public_id: publicId,
-          signature: signature,
-          asset_id: assetId,
-        },
-      );
-
-      if (res?.data?.result === "ok") {
-        setReviewImagesBlob(
-          reviewImagesBlob?.filter((i) => i?.publicId === publicId),
-        );
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const handleClearInput = (name: keyof Post) => {
+    setFormCreate({
+      ...formCreate,
+      [name]: ''
+    })
+  }
 
   return (
     <section className="flex flex-col container m-auto items-center justify-center gap-4 md:py-5">
-      <FileUploader
-        height="100px"
-        width="100px"
-        onFilesChanged={handleSubmitImage}
-      />
-      {reviewImagesBlob?.map((item) => (
-        <ImageCard
-          key={item?.signature}
-          canDelete
-          assetId={item?.assetId}
-          handleCopySrc={copyText}
-          handleDeleteImg={handleDeleteImg}
-          isLoading={loading}
-          publicId={item?.publicId}
-          signature={item?.signature}
-          src={item?.secureUrl}
+      <div className="w-full flex">
+        <FileUploader
+          className="border-1 rounded-lg border-dashed min-w-[300px] border-gray-500"
+          height="300px"
+          placeholder={uploading ? 'Uploading' : 'Upload image'}
+          width="300px"
+          onFilesChanged={(e) => handleSubmitImage(e, handleUpdateListCreateImage)}
         />
-      ))}
+        <div className="masonry w-full ml-3">
+          {reviewImagesBlob?.map((item) => (
+            <ImageCard
+              key={item?.secureUrl}
+              canDelete
+              className="masonry-item"
+              handleCopySrc={copyText}
+              handleDeleteImg={handleDeleteImg}
+              handleUpdateList={handleDeleteItem}
+              publicId={item?.publicId}
+              src={item?.secureUrl}
+              uploading={uploading}
+            />
+          ))}
+        </div>
+      </div>
+      <Input
+        isClearable
+        label={<p>Cover Image URL</p>}
+        name="cover"
+        value={formCreate?.cover}
+        onChange={handleOnChange}
+        onClear={() => handleClearInput('cover')}
+      />
       <Input
         isClearable
         label={<p>Title</p>}
         name="title"
         value={formCreate?.title}
         onChange={handleOnChange}
+        onClear={() => handleClearInput('title')}
       />
       <Input
         endContent={
@@ -142,7 +121,8 @@ export default function Home() {
         value={formCreate?.slug}
         onChange={handleOnChange}
       />
+      <TagCreator listTag={fakeData} />
       <MyEditor />
     </section>
-  );
+  )
 }

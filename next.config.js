@@ -8,6 +8,15 @@ const nextConfig = {
       },
     ],
   },
+  publicRuntimeConfig: {
+    cloudName: process.env.CLOUD_NAME,
+    apiSecret: process.env.API_SECRET,
+    apiKey: process.env.API_KEY,
+    uploadPreset: process.env.UPLOAD_PRESET
+  },
+  serverRuntimeConfig: {
+    uploadPreset: process.env.UPLOAD_PRESET
+  }
 };
 
 module.exports = nextConfig;
