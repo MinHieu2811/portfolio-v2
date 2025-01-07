@@ -1,9 +1,10 @@
 'use client'
 
 import { Input } from '@nextui-org/input'
-import { ChangeEvent, useCallback, useState } from 'react'
+import { ChangeEvent, useCallback, useEffect, useState } from 'react'
 import { Post } from '@prisma/client'
 import { Button } from '@nextui-org/react'
+import dompurify from 'dompurify'
 
 import MyEditor from '@/components/custom/MyEditor'
 import { Nullable } from '@/types'
@@ -20,33 +21,38 @@ const inititalPostForm: Nullable<Post> = {
   title: ''
 }
 
-const fakeData = [
-  {
-    value: 'react',
-    count: 5
-  },
-  {
-    value: 'nextjs',
-    count: 6
-  },
-  {
-    value: 'javascript',
-    count: 7
-  }
-]
+const getUpsertDesription = (description?: string) => {
+  return dompurify.sanitize(description || '', { ADD_TAGS: ['iframe'], ADD_ATTR: ['target'] }) || ''
+}
 
 export default function Home() {
   const [formCreate, setFormCreate] = useState<Nullable<Post>>(inititalPostForm)
   const [reviewImagesBlob, setReviewImagesBlob] = useState<ImagePost[]>([])
-  const { loading: uploading, handleDeleteImg, handleSubmitImage } = usePostServices()
+  const { loading: uploading, handleDeleteImg, handleSubmitImage, handleGetAllTags } = usePostServices()
+  const [listTags, setListTags] = useState<Array<{ value?: string; count?: number }>>([])
 
   const handleUpdateListCreateImage = (newItem?: ImagePost) => {
     setReviewImagesBlob([...(reviewImagesBlob ?? []), newItem ?? {}])
   }
 
+  const handleGetListTag = async () => {
+    const listTags = await handleGetAllTags()
+
+    setListTags(listTags)
+  }
+
+  useEffect(() => {
+    handleGetListTag()
+  }, [])
+
+  const handleSubmit = () => {
+    console.log(formCreate)
+  }
+
   const handleDeleteItem = (publicId: string) => {
     setReviewImagesBlob(reviewImagesBlob?.filter((item) => item?.publicId !== publicId))
   }
+
   const handleOnChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormCreate({
       ...formCreate,
@@ -121,8 +127,17 @@ export default function Home() {
         value={formCreate?.slug}
         onChange={handleOnChange}
       />
-      <TagCreator listTag={fakeData} />
-      <MyEditor />
+      <TagCreator listTag={listTags} />
+      <MyEditor
+        value={formCreate?.content}
+        onEditorChange={(e: string) => setFormCreate({ ...formCreate, content: e })}
+      />
+
+      <div className="flex items-center">
+        <Button type="button" variant="solid" onPress={handleSubmit}>
+          Create new Post
+        </Button>
+      </div>
     </section>
   )
 }

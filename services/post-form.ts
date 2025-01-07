@@ -71,10 +71,27 @@ const usePostServices = (): PostServiceType => {
     []
   )
 
+  const handleGetAllTags = useCallback(async () => {
+    try {
+      setLoading(true)
+
+      const res = await axiosImageInstance.get('/list-tags')
+
+      return res?.data
+    } catch (error) {
+      console.error(error)
+
+      return []
+    } finally {
+      setLoading(true)
+    }
+  }, [])
+
   return {
     loading,
     handleSubmitImage,
-    handleDeleteImg
+    handleDeleteImg,
+    handleGetAllTags
   }
 }
 
@@ -82,6 +99,7 @@ export type PostServiceType = {
   loading: boolean
   handleSubmitImage: FuncSubmitImage
   handleDeleteImg: FuncDeleteImage
+  handleGetAllTags: () => Promise<Array<{ value?: string; count?: number }>>
 }
 
 export type FuncSubmitImage = (files: Blob[], handleUpdateList?: (newItem: ImagePost) => void) => Promise<void>
